@@ -16,6 +16,10 @@ data ChromosomeType = InteractionTag
 
 type Chromosome = Array ChromosomeType [Resource]
 
+testChromosome :: Chromosome
+testChromosome = listArray (InteractionTag, TradingResource) [[x] | x <- [1..8]]
+
+
 randomGene :: Int -> IO [Resource]
 randomGene n = do
                g <- newStdGen
