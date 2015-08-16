@@ -12,7 +12,13 @@ data Agent = Agent {
   makeup :: [Resource]
   }
 
-testAgent name = Agent name testChromosome [10,10] [10, 10]
+testAgent name = Agent name testChromosome [10,10] [10,10]
+
+
+randomAgent :: String -> IO Agent
+randomAgent name = do
+                   c <- randomChromosome
+                   return $ Agent name c [10,10] [10,10]
 
 willAttack :: Agent -> Agent -> Bool
 willAttack a1 a2 = isPrefixOf ((chromosome a1) ! CombatCondition)  ((chromosome a2) ! InteractionTag) -- Interaction or Offense??
