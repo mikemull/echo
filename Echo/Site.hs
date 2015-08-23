@@ -3,6 +3,7 @@ module Echo.Site where
 import Control.Monad.State.Lazy
 import System.Random
 import Echo.Agent
+import Echo.Chromosome
 
 -- A site is basically a ring (circular list) of agents, plus resources
 data Site = Site {
@@ -25,7 +26,7 @@ moveAgent s = Site $ (tail x) ++ [(head x)]
 interact :: Site -> IO (Int, Int)
 interact s = do
              g <- newStdGen
-             let a1 = head $ randomRs (0, length (agents s)) g
-             let a2 = head $ dropWhile (==a1) $ randomRs (0, length (agents s)) g
+             let (a1,g2) = randomR (0, length (agents s)) g
+             let a2 = head $ dropWhile (==a1) $ randomRs (0, length (agents s)) g2
              return (a1,a2)
 
