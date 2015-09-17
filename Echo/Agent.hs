@@ -1,6 +1,7 @@
 module Echo.Agent where
 
 import Control.Applicative ((<$>))
+import Control.Monad.State
 import Data.Array
 import Data.List
 import Echo.Types
@@ -28,10 +29,15 @@ insufficientResource p_agent = find (<0) $ zipWith (-) (reservoir p_agent) (map 
 
 reservoirShare x = map (\x-> quot x 2) x
 
-rep :: Agent -> Maybe Agent
+subRes a1 a2 = a1 {reservoir=(zipWith (-) (reservoir a1) (reservoir a2))} 
+
+  
+rep :: Agent -> IO (Maybe Agent)
 rep p_agent = case insufficientResource p_agent of
-                      Just _ -> Nothing
-                      Nothing -> Just $  Agent "x1" (chromosome p_agent) (reservoirShare (reservoir p_agent))
+                      Just _ -> return Nothing
+                      Nothing -> do
+                            childChrom <- mutateChromosome (chromosome p_agent)
+                            return $ Just $  Agent ("c" ++ name p_agent) childChrom (reservoirShare (reservoir p_agent))
 
 willAttack :: Agent -> Agent -> Bool
 willAttack a1 a2 = isPrefixOf ((chromosome a1) ! CombatCondition)  ((chromosome a2) ! InteractionTag) -- Interaction or Offense??
@@ -45,5 +51,4 @@ hamming xs [] = length xs
 hamming (x:xs) (y:ys)
  | x /= y = 1 + hamming xs ys
  | otherwise = hamming xs ys
-
 

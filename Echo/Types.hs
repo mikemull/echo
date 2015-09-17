@@ -15,3 +15,5 @@ instance Random Resource where
 selfRepThreshold = 2 :: Int
 
 selfRepFraction = 0.5
+
+mutationProb = 0.001 :: Float
