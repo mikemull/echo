@@ -1,25 +1,34 @@
 import Control.Monad
 import Control.Monad.State
 import Data.Array
+import Data.Vector (singleton)
 import Echo.Site
+import System.Random.MWC
+
 
 main = do
-  s <- randomSite 10
-  -- execStateT replicateM 3 $ step s
-  let sim = replicateM 3 step
-  execStateT sim s >>= print
+  g <- initialize (singleton 42)
+  n <- getLine
+  s <- randomSite g 50
+  let sim = replicateM (read n) (step g)
+  execStateT sim s >>= stats
 
 
-step :: StateT Site IO ()
-step = do
+step :: GenIO -> StateT Site IO ()
+step g = do
   -- For each site:
   --  interactions
-  --  collect resources
   --  tax
   --  kill
-  --  produce resources
   --  migrate
-  --  replicate
   s <- get
-  s' <- lift $ repAgents s
-  put s'
+  --  distribute resources
+  s' <- lift $ distRes g s
+  --  replicate
+  s'' <- lift $ repAgents g s'
+  put s''
+
+
+stats :: Site -> IO ()
+stats s = do
+  putStrLn $ show $ length (agents s)

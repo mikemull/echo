@@ -1,5 +1,6 @@
 module Echo.Agent where
 
+import System.Random.MWC
 import Control.Applicative ((<$>))
 import Control.Monad.State
 import Data.Array
@@ -16,9 +17,9 @@ data Agent = Agent {
 testAgent name = Agent name testChromosome [10,10,10,10]
 
 
-randomAgent :: String -> IO Agent
-randomAgent name = do
-                   c <- randomChromosome
+randomAgent :: GenIO -> String -> IO Agent
+randomAgent g name = do
+                   c <- randomChromosome g
                    return $ Agent name c [10,10,10,10]
 
 countR r rs = length $ filter (==r) rs
@@ -31,12 +32,19 @@ reservoirShare x = map (\x-> quot x 2) x
 
 subRes a1 a2 = a1 {reservoir=(zipWith (-) (reservoir a1) (reservoir a2))} 
 
-  
-rep :: Agent -> IO (Maybe Agent)
-rep p_agent = case insufficientResource p_agent of
+addRes :: GenIO -> [Float] -> Agent -> IO Agent
+addRes g prob a = do
+           rinc <- resInc g prob
+           return $ a {reservoir=(zipWith (+) (reservoir a) rinc)}
+
+resInc g prob = replicateM (length prob) (uniform g) >>= \x -> return $ zipWith (\r s -> if r>s then 1 else 0) x prob  
+
+
+rep :: GenIO -> Agent -> IO (Maybe Agent)
+rep g p_agent = case insufficientResource p_agent of
                       Just _ -> return Nothing
                       Nothing -> do
-                            childChrom <- mutateChromosome (chromosome p_agent)
+                            childChrom <- mutateChromosome g (chromosome p_agent)
                             return $ Just $  Agent ("c" ++ name p_agent) childChrom (reservoirShare (reservoir p_agent))
 
 willAttack :: Agent -> Agent -> Bool
